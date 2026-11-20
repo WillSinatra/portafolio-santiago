@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Tokens de tema. Se aplican con data-theme en <html>, que setea el script
+ * inline de app/layout.tsx antes del primer render.
+ *
+ * Contrastes WCAG medidos (texto sobre --bg / --surface):
+ *   Oscuro: fg 21:1 · fg-2 #A1A1AA 8.19 / 7.76 · fg-3 #8A8A93 6.14 / 5.81
+ *           accent #22C55E 9.22 / 8.73
+ *   Claro:  fg 18.96 / 19.80 · fg-2 #52525B 7.40 / 7.73 · fg-3 #5F5F66 6.06 / 6.33
+ *           accent #15803D 4.80 / 5.02 (el #22C55E daría 2.18, no cumple AA)
+ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #09090b;
+  --fg: #ffffff;
+  --fg-2: #a1a1aa; /* texto secundario: párrafos, chips */
+  --fg-3: #8a8a93; /* meta: folios, etiquetas, footer */
+  --accent: #22c55e;
+  --hero-filter: none;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --fg: #0a0a0a;
+  --fg-2: #52525b;
+  --fg-3: #5f5f66;
+  --accent: #15803d;
+  /* Invierte la animación del hero (fondo negro → claro) y rota el tono
+     para que el verde siga siendo verde en lugar de pasar a magenta. */
+  --hero-filter: invert(1) hue-rotate(180deg);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Foco visible y consistente en ambos temas (acento ≥ 3:1 contra el fondo). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Transición suave de colores solo mientras se cambia de tema; la clase la
+   agrega y quita theme-toggle.tsx para no pisar las transiciones propias. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    border-color 300ms ease,
+    fill 300ms ease,
+    filter 300ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
